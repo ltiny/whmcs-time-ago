@@ -5,29 +5,28 @@
 ------------------------------------------------------------------ */
 
 function wikiDate($format, $time) {
-
 	$now 		= time();
-	
-	if ($now < $time) {
-		$periods 	= array("ثانیه", "دقیقه", "ساعت", "روز");
-		$lengths 	= array("60","60","24","7");
-		$difference = $time - $now;
-		$tense 		= "دیگر";
-	} else {
-		$periods 	= array("ثانیه", "دقیقه", "ساعت", "روز", "هفته", "ماه", "سال", "دهه");
-		$lengths 	= array("60","60","24","7","4.35","12","10");
-		$difference = $now - $time;
-		$tense 		= "پیش";
-	}
+	$timestamp 	= ($now<$time) ? ($time-$now) : ($now-$time);
+	$tense 		= ($now<$time) ? "دیگر" : "پیش";
+	if($timestamp < 1)
+	return false;
 
- 
-	for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
-		$difference /= $lengths[$j];
+	$values = array( 
+		12*30*24*60*60*10 =>  'دهه',
+		12*30*24*60*60    =>  'سال',
+		30*24*60*60       =>  'ماه',
+		24*60*60*7        =>  'هفته',
+		24*60*60          =>  'روز',
+		60*60             =>  'ساعت',
+		60                =>  'دقیقه',
+		1                 =>  'ثانیه'
+	);
+
+	foreach($values as $secs=>$point) {
+		$res = $timestamp / $secs;
+	if($res >= 1)
+		return "<span title='". date($format, $time) ."'>". round($res) . " {$point} {$tense}" ."</span>";
 	}
- 
-	$difference = round($difference);
-	
-	return "<span title='". date($format, $time) ."'>$difference $periods[$j] $tense</span>";
 }
 
 add_hook('ClientAreaPage', 1, function($wikiDateReplace) {
